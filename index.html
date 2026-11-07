@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>แปลงข้อความไทม์ไลน์งานอัตโนมัติ</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--tx:#1c2333;--mut:#6b7488;--bd:#e2e7f1;--pri:#3b6cf6;--ok:#16a34a;--warn:#d97706;--bad:#dc2626;--chip:#eef2ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1420;--card:#192032;--tx:#e8ecf5;--mut:#9aa4bb;--bd:#2a3350;--pri:#7c9cff;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--chip:#232c47;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1420;--card:#192032;--tx:#e8ecf5;--mut:#9aa4bb;--bd:#2a3350;--pri:#7c9cff;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--chip:#232c47;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Noto Sans Thai","Sarabun",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+.wrap{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:1.35rem;margin:4px 0 2px}
+.sub{color:var(--mut);font-size:.9rem;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:1fr 1.2fr;gap:14px}
+@media(max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
+textarea{width:100%;min-height:330px;resize:vertical;border:1px solid var(--bd);border-radius:10px;padding:10px;background:var(--bg);color:var(--tx);font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button{border:1px solid var(--bd);background:var(--chip);color:var(--tx);padding:8px 12px;border-radius:10px;cursor:pointer;font:inherit;font-size:.88rem}
+button.p{background:var(--pri);color:#fff;border-color:var(--pri)}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.stat{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:8px 10px}
+.stat b{display:block;font-size:1.05rem}.stat span{font-size:.75rem;color:var(--mut)}
+.status{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:12px;font-weight:600}
+.status.done{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.status.prog{background:color-mix(in srgb,var(--warn) 15%,transparent);color:var(--warn)}
+.status .em{font-size:1.8rem}
+h3{font-size:.95rem;margin:14px 0 8px}
+.people{display:flex;flex-wrap:wrap;gap:8px}
+.pp{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:8px 10px;font-size:.85rem;min-width:150px}
+.pp b{display:block}.pp small{color:var(--mut)}
+.day{font-weight:700;margin:14px 0 6px;color:var(--pri);font-size:.9rem}
+.ev{display:flex;gap:10px;padding:8px 0;border-left:2px solid var(--bd);margin-left:10px;padding-left:12px;position:relative}
+.ev:before{content:"";position:absolute;left:-6px;top:14px;width:10px;height:10px;border-radius:50%;background:var(--c,var(--pri))}
+.t{font:600 .85rem ui-monospace,Menlo,monospace;min-width:44px;color:var(--mut)}
+.ic{font-size:1.25rem;line-height:1.2}
+.bd{flex:1;min-width:0}
+.bd .h{font-weight:600;font-size:.92rem}
+.bd .x{font-size:.84rem;color:var(--mut);overflow-wrap:anywhere}
+.tag{display:inline-block;font-size:.7rem;padding:1px 7px;border-radius:99px;background:var(--chip);margin-left:6px;color:var(--mut)}
+.mood{font-size:1.4rem}
+.gap{margin:2px 0 2px 22px;font-size:.75rem;color:var(--mut)}
+.empty{color:var(--mut);text-align:center;padding:40px 0}
+.err{color:var(--bad);font-size:.85rem}
+.full{min-height:200px;font-size:12.5px;line-height:1.65;white-space:pre-wrap;overflow:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🧾 แปลงข้อความไทม์ไลน์งานอัตโนมัติ</h1>
+  <div class="sub">วางข้อความจากระบบ แล้วผลจะแสดงทันที พร้อมคำอธิบายและอิโมจิอารมณ์ของแต่ละเหตุการณ์</div>
+  <div class="grid">
+    <div class="card">
+      <b>📥 ป้อนข้อความ</b>
+      <textarea id="in" spellcheck="false" placeholder="วางข้อความที่นี่..."></textarea>
+      <div class="btns">
+        <button class="p" id="ex">✨ ใส่ข้อความตัวอย่าง</button>
+        <button id="cp">📋 คัดลอกสรุป</button>
+        <button id="cl">🗑️ ล้าง</button>
+      </div>
+    </div>
+    <div class="card" id="out"></div>
+  </div>
+</div>
+<script>
+var SAMPLE = "==== 06/11/2026 ====\n18:59 >> Created Workforce SR P.\n18:59 >> Assigned Ibrohim S.\nเข้าสถานที่ไม่ได้ พื้นที่เฉพาะ / พื้นที่เสี่ยงภัย เช่น Red Zone\n==== 07/11/2026 ====\n05:42 >> Assigned Saiphoo P.\n06:04 >> Assigned Arhamah M.\n06:05 >> Accepted Arhamah M.\n06:13 >> Departed Arhamah M.\n06:26 >> On-Site Arhamah M.\n06:36 >> ขาดระยะ 5.97km จากโคกหมักtoปรีกี\n07:33 >> เจอจุดขาดแล้ว สาเหตุ มดทำรังในหัวต่อ  reuse\n07:50 >> Done Arhamah M.";
+var $ = function(id){return document.getElementById(id)};
+var inp = $("in"), out = $("out");
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function fmt(min){
+  if(min==null||isNaN(min)) return "-";
+  min=Math.round(min); if(min<0) return "-";
+  var h=Math.floor(min/60), m=min%60;
+  if(h>=24){var d=Math.floor(h/24); h=h%24; return d+" วัน "+h+" ชม. "+m+" นาที"}
+  return h? h+" ชม. "+m+" นาที" : m+" นาที";
+}
+var META = {
+  created:{ic:"📝",mood:"😐",c:"#64748b",th:"เปิดงานในระบบ",ex:function(w){return "งานถูกสร้างโดย "+w+" — จุดเริ่มต้นของไทม์ไลน์"}},
+  assigned:{ic:"📌",mood:"🙂",c:"#3b6cf6",th:"มอบหมายงาน",ex:function(w){return "ระบบ/หัวหน้าจ่ายงานให้ "+w+" รอการตอบรับ"}},
+  accepted:{ic:"✅",mood:"😊",c:"#16a34a",th:"ตอบรับงาน",ex:function(w){return w+" ยืนยันว่าจะรับงานนี้"}},
+  departed:{ic:"🚗",mood:"😃",c:"#0ea5e9",th:"ออกเดินทาง",ex:function(w){return w+" ออกเดินทางไปยังหน้างานแล้ว"}},
+  onsite:{ic:"📍",mood:"💪",c:"#8b5cf6",th:"ถึงหน้างาน",ex:function(w){return w+" ถึงหน้างานและเริ่มตรวจสอบ"}},
+  done:{ic:"🏁",mood:"🥳",c:"#16a34a",th:"งานเสร็จสิ้น",ex:function(w){return w+" ปิดงานเรียบร้อย"}},
+  help:{ic:"🆘",mood:"😰",c:"#dc2626",th:"ขอความช่วยเหลือ",ex:function(w){return w+" ขอความช่วยเหลือจากทีม"}},
+  cancel:{ic:"❌",mood:"😕",c:"#dc2626",th:"ยกเลิก/ปฏิเสธงาน",ex:function(w){return w+" ยกเลิกหรือปฏิเสธงาน"}}
+};
+function actKey(a){
+  a=a.toLowerCase().replace(/[^a-z]/g,"");
+  if(a==="onsite") return "onsite";
+  if(/^(created|assigned|accepted|departed|done|help)$/.test(a)) return a;
+  if(/^(cancel|cancelled|canceled|rejected|reject)$/.test(a)) return "cancel";
+  return null;
+}
+function classifyNote(t){
+  var m, r={ic:"💬",mood:"😐",c:"#64748b",th:"บันทึกจากช่าง",ex:"ข้อความบันทึกเพิ่มเติม"};
+  if(/เข้าสถานที่ไม่ได้|red\s*zone|เสี่ยงภัย|พื้นที่เฉพาะ/i.test(t)){
+    r={ic:"🚫",mood:"😟",c:"#dc2626",th:"เข้าพื้นที่ไม่ได้",ex:"ช่างเข้าสถานที่ไม่ได้ เพราะเป็นพื้นที่เฉพาะ/เสี่ยงภัย (เช่น Red Zone) งานจึงรอหรือต้องเปลี่ยนแผน"};
+  } else if((m=t.match(/ขาดระยะ\s*([\d.]+)\s*km\s*(?:จาก)?\s*(.*?)\s*to\s*(.+)/i))){
+    r={ic:"✂️",mood:"😮",c:"#d97706",th:"พบสายขาด · "+m[1]+" กม.",ex:"วัดด้วย OTDR พบว่าเส้นใยขาดที่ระยะ "+m[1]+" กม. อยู่ในช่วงระหว่าง "+m[2]+" ถึง "+m[3]+" ต้องเดินหาจุดขาดจริง"};
+  } else if(/ขาดระยะ/.test(t)){
+    r={ic:"✂️",mood:"😮",c:"#d97706",th:"พบสายขาด",ex:"แจ้งระยะที่สายขาด ใช้ประมาณตำแหน่งที่ต้องไปแก้"};
+  } else if(/เจอจุดขาด|พบจุดขาด|เจอจุด/.test(t)){
+    var cause=(t.match(/สาเหตุ\s*(.+)/)||[])[1]||"";
+    r={ic:"🔍",mood:"😌",c:"#16a34a",th:"เจอจุดขาดแล้ว",ex:"ช่างพบตำแหน่งที่ขาดจริง"+(cause?" สาเหตุ: "+cause:"")+(/มด/.test(cause)?" 🐜 (มดทำรังกัดสาย/หัวต่อ)":"")+(/reuse/i.test(cause)?" — แก้โดยนำหัวต่อมาใช้ซ้ำ (reuse)":"")};
+  }
+  return r;
+}
+function parse(text){
+  var lines=text.split(/\r?\n/), date=null, evs=[], last=null, errs=0;
+  lines.forEach(function(raw){
+    var l=raw.trim(); if(!l) return;
+    var d=l.match(/^=+\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*=+$/);
+    if(d){date={d:+d[1],m:+d[2],y:+d[3]}; return}
+    var t=l.match(/^(\d{1,2}):(\d{2})\s*>>\s*(.+)$/);
+    if(t){
+      var rest=t[3].trim(), a=rest.match(/^(Created|Assigned|Accepted|Departed|On-?Site|Done|Help|Cancel\w*|Reject\w*)\b\s*(.*)$/i);
+      var dt=date?new Date(date.y>2400?date.y-543:date.y,date.m-1,date.d,+t[1],+t[2]):null;
+      var e={time:t[1].padStart(2,"0")+":"+t[2],dt:dt,date:date?l2(date):"",extra:[]};
+      var k=a?actKey(a[1]):null;
+      if(k){e.type="act";e.key=k;e.who=a[2].trim()||"(ไม่ระบุชื่อ)";e.raw=a[1]}
+      else{e.type="note";e.text=rest}
+      evs.push(e);last=e;return;
+    }
+    evs.push({type:"note",time:"",dt:null,date:date?l2(date):"",text:l,extra:[]});last=evs[evs.length-1];
+  });
+  return evs;
+}
+function l2(d){return String(d.d).padStart(2,"0")+"/"+String(d.m).padStart(2,"0")+"/"+d.y}
+function mins(a,b){return(a&&b)?(b-a)/60000:null}
+function render(){
+  var txt=inp.value;
+  if(!txt.trim()){out.innerHTML='<div class="empty">🌱 ยังไม่มีข้อความ<br>วางข้อความ หรือกด “ใส่ข้อความตัวอย่าง”</div>';window._sum="";window._full="";return}
+  var evs=parse(txt);
+  if(!evs.length){out.innerHTML='<div class="empty">🤔 อ่านรูปแบบข้อความไม่ออก</div>';return}
+  var acts=evs.filter(function(e){return e.type==="act"});
+  function first(k){return acts.filter(function(e){return e.key===k})[0]}
+  function lastOf(k){var a=acts.filter(function(e){return e.key===k});return a[a.length-1]}
+  var created=first("created"), doneE=lastOf("done"), acc=lastOf("accepted");
+  var main=(doneE&&doneE.who)||(acc&&acc.who)||null;
+  function mine(k){return acts.filter(function(e){return e.key===k&&e.who===main}).pop()}
+  var asg=mine("assigned")||lastOf("assigned"), dep=mine("departed"), site=mine("onsite");
+  var st=[
+    ["รอจ่ายงาน",created&&first("assigned")?mins(created.dt,first("assigned").dt):null],
+    ["รอตอบรับ",asg&&acc?mins(asg.dt,acc.dt):null],
+    ["เดินทาง",dep&&site?mins(dep.dt,site.dt):null],
+    ["ซ่อมหน้างาน",site&&doneE?mins(site.dt,doneE.dt):null],
+    ["รวมทั้งงาน",created&&doneE?mins(created.dt,doneE.dt):(created&&evs.length?mins(created.dt,evs[evs.length-1].dt):null)]
+  ];
+  var isDone=!!doneE, last=evs[evs.length-1];
+  var html='<div class="status '+(isDone?"done":"prog")+'"><span class="em">'+(isDone?"🥳":"🔧")+'</span><div>'+(isDone?"งานเสร็จสิ้นแล้ว":"งานกำลังดำเนินการ")+(main?'<div style="font-weight:400;font-size:.85rem">ผู้รับผิดชอบหลัก: '+esc(main)+'</div>':'')+'</div></div>';
+  html+='<div class="sum">'+st.map(function(s){return '<div class="stat"><b>'+fmt(s[1])+'</b><span>'+s[0]+'</span></div>'}).join("")+'</div>';
+  // people
+  var pm={}, order=[];
+  acts.forEach(function(e){if(!pm[e.who]){pm[e.who]=[];order.push(e.who)}pm[e.who].push(e)});
+  html+='<h3>👥 ผู้เกี่ยวข้อง</h3><div class="people">'+order.map(function(w){
+    var ks=pm[w].map(function(e){return e.key});
+    var role=ks.indexOf("created")>-1&&ks.length===1?"ผู้เปิดงาน 📝":ks.indexOf("done")>-1?"ปิดงาน 🏆":ks.indexOf("accepted")>-1?"กำลังทำงาน 🛠️":ks.indexOf("assigned")>-1?"ถูกมอบหมาย แต่ไม่ตอบรับ 🔄":"ร่วมงาน";
+    return '<div class="pp"><b>'+esc(w)+'</b><small>'+role+'</small><br><small>'+pm[w].map(function(e){return e.time+" "+META[e.key].th}).join(" → ")+'</small></div>'
+  }).join("")+'</div>';
+  // timeline
+  html+='<h3>🕒 ไทม์ไลน์</h3>';
+  var curDate=null, prev=null, plain=[];
+  evs.forEach(function(e){
+    if(e.date!==curDate){curDate=e.date;html+='<div class="day">📅 '+esc(e.date||"ไม่ระบุวันที่")+'</div>';prev=null}
+    var m,head,expl,tag="";
+    if(e.type==="act"){m=META[e.key];head=m.th+" · "+esc(e.who);expl=m.ex(e.who);tag=esc(e.raw)}
+    else{var c=classifyNote(e.text+" "+e.extra.join(" "));m=c;head=c.th;expl=c.ex;tag="โน้ต"}
+    if(e.type==="act"&&e.key==="assigned"&&e.extra.length){var c2=classifyNote(e.extra.join(" "));if(c2.th!=="บันทึกจากช่าง"){m={ic:m.ic,mood:c2.mood,c:c2.c};expl+=" — แต่ "+c2.ex}}
+    var gap=prev&&e.dt&&prev.dt?mins(prev.dt,e.dt):null;
+    if(gap!=null&&gap>=30) html+='<div class="gap">⏳ ผ่านไป '+fmt(gap)+'</div>';
+    var orig=e.type==="note"?e.text:"";
+    html+='<div class="ev" style="--c:'+m.c+'"><div class="t">'+e.time+'</div><div class="ic">'+m.ic+'</div><div class="bd"><div class="h">'+head+'<span class="tag">'+tag+'</span></div><div class="x">'+esc(expl)+'</div>'+(orig?'<div class="x">“'+esc(orig)+'”</div>':'')+(e.extra.length?'<div class="x">📎 '+esc(e.extra.join(" "))+'</div>':'')+'</div><div class="mood">'+m.mood+'</div></div>';
+    if(e.dt)prev=e;
+  });
+  var full=buildText(evs,st,main,isDone,acts);
+  window._full=full;
+  html+='<h3>📋 ข้อความสำหรับคัดลอก (พร้อมสรุปและวิเคราะห์)</h3><textarea id="full" class="full" readonly></textarea><div class="btns"><button class="p" id="cpfull">📋 คัดลอกข้อความทั้งหมด</button></div>';
+  out.innerHTML=html;
+  var fb2=$("full");fb2.value=full;fb2.style.height=Math.min(800,fb2.scrollHeight+6)+"px";
+  $("cpfull").onclick=function(){copyTxt(full,this,"📋 คัดลอกข้อความทั้งหมด")};
+  window._sum=(isDone?"✅ งานเสร็จสิ้น":"🔧 งานกำลังดำเนินการ")+(main?" | ผู้รับผิดชอบ: "+main:"")+"\n"+st.map(function(s){return s[0]+": "+fmt(s[1])}).join("\n");
+}
+function copyTxt(s,btn,label){
+  function ok(){btn.textContent="✔️ คัดลอกแล้ว"}
+  try{navigator.clipboard.writeText(s).then(ok,function(){fb(s);ok()})}catch(e){fb(s);ok()}
+  setTimeout(function(){btn.textContent=label},1600);
+}
+var LINEIC={created:"📝",assigned:"👤",accepted:"👍",departed:"🚗",onsite:"📍",done:"✅",help:"🆘",cancel:"❌"};
+var SHORT={created:"เปิดใบงานแจ้งปัญหา",assigned:"มอบหมายงานให้ช่าง",accepted:"ช่างกดรับงาน",departed:"ช่างออกเดินทาง",onsite:"ช่างถึงหน้างาน",done:"แก้ไขเรียบร้อย ปิดงานสมบูรณ์! 🛠️🎉",help:"ช่างขอความช่วยเหลือ",cancel:"ยกเลิก/ปฏิเสธงาน"};
+function noteEm(t){
+  if(/เข้าสถานที่ไม่ได้|red\s*zone|เสี่ยงภัย/i.test(t))return "🛑⚠️";
+  if(/ขาดระยะ/.test(t))return "🔴💥";
+  if(/มด/.test(t))return "🐜🏠";
+  if(/เจอจุด|พบจุด/.test(t))return "🎯";
+  return "";
+}
+function buildText(evs,st,main,isDone,acts){
+  var L=[],cur=null,nAsg=0,nAcc=0,dates=[];
+  evs.forEach(function(e){
+    if(e.date!==cur){cur=e.date;if(L.length)L.push("");L.push("📅 "+(e.date||"ไม่ระบุวันที่"));L.push("");if(e.date&&dates.indexOf(e.date)<0)dates.push(e.date)}
+    if(e.type==="act"){
+      var s=SHORT[e.key];
+      if(e.key==="assigned"){nAsg++;s=nAsg===1?"มอบหมายงานให้ช่างคนแรก":"ส่งต่อ/เปลี่ยนช่างเป็น "+e.who}
+      if(e.key==="accepted")nAcc++;
+      L.push("* "+LINEIC[e.key]+" "+e.time+" >> "+e.raw+" "+e.who+" ("+s+")");
+    }else{
+      var c=classifyNote(e.text),lead=c.ic==="✂️"?"📉":c.ic,em=noteEm(e.text);
+      L.push("* "+lead+" "+(e.time?e.time+" >> ":"")+e.text+(em?" "+em:"")+" ("+c.ex+")");
+    }
+  });
+  var notes=evs.filter(function(e){return e.type==="note"}).map(function(e){return e.text});
+  var all=notes.join(" ");
+  var blocked=/เข้าสถานที่ไม่ได้|red\s*zone|เสี่ยงภัย/i.test(all);
+  var distM=all.match(/ขาดระยะ\s*([\d.]+)\s*km\s*(?:จาก)?\s*(.*?)\s*to\s*(\S+)/i);
+  var cause=(all.match(/สาเหตุ\s*(.+)/)||[])[1]||"";
+  var ant=/มด/.test(cause);
+  var sum="เป็นเคสแจ้งแก้ไขปัญหาโครงข่าย/สายสัญญาณ";
+  if(blocked)sum+=" โดยวันแรก ("+(dates[0]||"-")+") เข้าซ่อมไม่ได้เพราะเป็นพื้นที่เสี่ยงภัย (Red Zone)";
+  if(main)sum+=(blocked?" จนกระทั่งวันถัดมา ":" ")+"ช่าง "+main+" รับงานและเดินทางเข้าพื้นที่";
+  if(distM)sum+=" ตรวจวัดพบสัญญาณขาดที่ระยะ "+distM[1]+" กม. ช่วง "+distM[2]+" - "+distM[3];
+  if(cause)sum+=" ตรวจหาจนพบว่าสาเหตุคือ "+cause.trim();
+  sum+=isDone?" และแก้ไขจนเสร็จสิ้นเมื่อ "+(acts.filter(function(a){return a.key==="done"}).pop().time)+" น.":" ขณะนี้งานยังไม่ปิด";
+  L.push("");L.push("💡 สรุปภาพรวมเหตุการณ์: "+sum);
+  L.push("");L.push("🔬 วิเคราะห์ละเอียด:");
+  L.push("* ⏱️ เวลารวมทั้งงาน: "+fmt(st[4][1])+" (รอจ่ายงาน "+fmt(st[0][1])+" | รอตอบรับ "+fmt(st[1][1])+" | เดินทาง "+fmt(st[2][1])+" | ซ่อมหน้างาน "+fmt(st[3][1])+")");
+  if(nAsg>nAcc&&nAcc>0)L.push("* 🔄 มีการจ่ายงาน "+nAsg+" ครั้ง แต่ช่างรับงานจริง "+nAcc+" ราย (เปลี่ยนมือ "+(nAsg-nAcc)+" ครั้ง) ทำให้งานเริ่มช้ากว่าที่ควร");
+  var tm=evs.filter(function(e){return e.dt}),mx=0,mf=null,mt=null,i;
+  for(i=1;i<tm.length;i++){var g=mins(tm[i-1].dt,tm[i].dt);if(g>mx){mx=g;mf=tm[i-1];mt=tm[i]}}
+  if(mf)L.push("* ⏳ ช่วงที่รอนานที่สุด: "+mf.time+" → "+mt.time+" ("+fmt(mx)+")"+(blocked&&mx>=120?" ซึ่งสอดคล้องกับการเข้าพื้นที่ไม่ได้/รอเปลี่ยนช่าง":""));
+  var site=acts.filter(function(a){return a.key==="onsite"}).pop(),fnd=evs.filter(function(e){return e.type==="note"&&/เจอจุด|พบจุด/.test(e.text)})[0],dn=acts.filter(function(a){return a.key==="done"}).pop();
+  if(site&&fnd&&fnd.dt)L.push("* 🔍 ใช้เวลาหาจุดขาด "+fmt(mins(site.dt,fnd.dt))+" หลังถึงหน้างาน"+(dn?" และแก้ไขต่ออีก "+fmt(mins(fnd.dt,dn.dt)):""));
+  if(ant)L.push("* 🐜 ต้นเหตุคือสัตว์/แมลงเข้าทำรังในหัวต่อ แนะนำตรวจซีลและฝาครอบหัวต่อจุดข้างเคียงเพื่อป้องกันซ้ำ");
+  if(/reuse/i.test(cause))L.push("* ♻️ ใช้วิธี reuse หัวต่อเดิม เหมาะกับงานด่วน แต่ควรติดตามผลสัญญาณหลังซ่อมว่าค่า loss ปกติ");
+  if(blocked)L.push("* 🛑 ข้อเสนอแนะ: ก่อนมอบหมายงานในพื้นที่เสี่ยงภัย ควรประสานขอสิทธิ์เข้าพื้นที่หรือเช็กสถานการณ์ก่อน เพื่อลดการเสียเวลา");
+  L.push("* "+(isDone?"🎉 ผลลัพธ์: ปิดงานสำเร็จ":"🔧 สถานะ: ยังดำเนินการอยู่"));
+  return L.join("\n");
+}
+inp.addEventListener("input",render);
+$("ex").onclick=function(){inp.value=SAMPLE;render()};
+$("cl").onclick=function(){inp.value="";render()};
+$("cp").onclick=function(){
+  var s=window._full||"";if(!s)return;
+  try{navigator.clipboard.writeText(s).then(function(){$("cp").textContent="✔️ คัดลอกแล้ว"},function(){fb(s)})}catch(e){fb(s)}
+  setTimeout(function(){$("cp").textContent="📋 คัดลอกสรุป"},1500);
+};
+function fb(s){var t=document.createElement("textarea");t.value=s;document.body.appendChild(t);t.select();try{document.execCommand("copy")}catch(e){}document.body.removeChild(t)}
+inp.value=SAMPLE;render();
+</script>
+</body>
+</html>
